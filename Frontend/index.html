@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Bot - Your Smart Assistant</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+ * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-primary: #ffffff;
+      --bg-secondary: #f0f7ff;
+      --text-primary: #1a365d;
+      --text-secondary: #4a5568;
+      --text-heading: #2d3748;
+      --accent-color: #3182ce;
+      --nav-bg: rgba(255, 255, 255, 0.7);
+      --nav-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      --about-bg: rgba(255,255,255,0.3);
+      --button-shadow: 0 4px 6px rgba(49, 130, 206, 0.3);
+      --button-hover-shadow: 0 6px 12px rgba(49, 130, 206, 0.3);
+      --modal-bg: rgba(255, 255, 255, 0.95);
+      --input-bg: #ffffff;
+      --input-border: #e2e8f0;
+      --bg-image: none;
+      --bg-blur: 0px;
+      --bg-overlay: rgba(255, 255, 255, 0);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: var(--text-primary);
+      line-height: 1.6;
+      transition: background 0.5s ease, color 0.3s ease;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: var(--bg-image);
+      background-size: cover;
+      background-position: center;
+      filter: blur(var(--bg-blur));
+      z-index: -2;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--bg-overlay);
+      z-index: -1;
+    }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      padding: 15px 40px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      background: var(--nav-bg);
+      backdrop-filter: blur(12px);
+      box-shadow: var(--nav-shadow);
+      z-index: 1000;
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 25px;
+      align-items: center;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--text-primary);
+      font-weight: 500;
+      font-size: 16px;
+      position: relative;
+      transition: color 0.3s ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--accent-color);
+    }
+
+    .dropdown {
+      position: relative;
+    }
+
+    .dropdown-btn {
+      cursor: pointer;
+      padding: 8px 16px;
+      border-radius: 6px;
+      background: var(--accent-color);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 500;
+      border: none;
+      outline: none;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dropdown-btn:hover {
+      background: #2c5282;
+    }
+
+    .dropdown-btn.active {
+      background: #2c5282;
+      box-shadow: 0 0 0 2px rgba(49, 130, 206, 0.4);
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      top: 42px;
+      left: 0;
+      background: var(--bg-primary);
+      border-radius: 8px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+      padding: 10px 0;
+      min-width: 200px;
+      z-index: 999;
+    }
+
+    .dropdown-content.show {
+      display: block;
+      animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .dropdown-content .theme-option {
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .dropdown-content .theme-option:hover {
+      background: rgba(0,0,0,0.05);
+    }
+
+    .theme-color {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+    }
+
+    .default-theme .theme-color {
+      background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%);
+    }
+    .dark-theme-option .theme-color {
+      background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+    }
+    .bright-theme-option .theme-color {
+      background: linear-gradient(135deg, #fffbeb 0%, #fed7aa 100%);
+    }
+    .theme-2 .theme-color {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    .theme-3 .theme-color {
+      background: linear-gradient(135deg, #fc5c7d 0%, #6a82fb 100%);
+    }
+    .theme-4 .theme-color {
+      background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    }
+
+    .main-content {
+      text-align: center;
+      padding: 120px 20px 60px;
+      max-width: 800px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .header-title {
+      font-size: 3.5rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: var(--text-heading);
+      transition: color 0.3s ease;
+    }
+
+    .description {
+      font-size: 1.25rem;
+      color: var(--text-secondary);
+      margin-bottom: 40px;
+      transition: color 0.3s ease;
+    }
+
+    .cta-button {
+      background-color: var(--accent-color);
+      color: white;
+      border: none;
+      padding: 16px 40px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: var(--button-shadow);
+    }
+
+    .cta-button:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--button-hover-shadow);
+    }
+
+    .about-us {
+      margin-top: 60px;
+      padding: 40px 20px;
+      text-align: center;
+      background: var(--about-bg);
+      border-radius: 16px;
+      max-width: 900px;
+      transition: background 0.3s ease;
+      backdrop-filter: blur(6px);
+    }
+
+    .about-us h2 {
+      font-size: 2rem;
+      margin-bottom: 15px;
+      color: var(--text-heading);
+      transition: color 0.3s ease;
+    }
+
+    .about-us p {
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+      line-height: 1.5;
+      transition: color 0.3s ease;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal {
+      background: var(--modal-bg);
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      width: 90%;
+      max-width: 450px;
+      padding: 30px;
+      position: relative;
+      transform: translateY(-20px);
+      transition: transform 0.3s ease;
+    }
+
+    .modal-overlay.active .modal {
+      transform: translateY(0);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--text-secondary);
+    }
+
+    .modal-title {
+      font-size: 1.8rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: var(--text-heading);
+      text-align: center;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 12px 15px;
+      border: 1px solid var(--input-border);
+      border-radius: 8px;
+      background: var(--input-bg);
+      color: var(--text-primary);
+      font-size: 1rem;
+      transition: border-color 0.3s ease;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--accent-color);
+    }
+
+    .captcha-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .captcha-code {
+      font-size: 1.5rem;
+      font-weight: bold;
+      letter-spacing: 5px;
+      padding: 5px 10px;
+      background: var(--input-bg);
+      border-radius: 5px;
+      color: var(--text-primary);
+      user-select: none;
+    }
+
+    .captcha-refresh {
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: var(--text-secondary);
+    }
+
+    .login-button {
+      width: 100%;
+      padding: 12px;
+      background: var(--accent-color);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      margin-bottom: 20px;
+    }
+
+    .login-button:hover {
+      background: #2c5282;
+    }
+
+    .register-section {
+      text-align: center;
+      margin-top: 20px;
+      color: var(--text-secondary);
+    }
+
+    .register-button {
+      background: none;
+      border: none;
+      color: var(--accent-color);
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: underline;
+      margin-left: 5px;
+    }
+
+    .registration-container {
+      display: none;
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .logo i {
+      font-size: 40px;
+      color: var(--accent-color);
+      margin-bottom: 10px;
+    }
+
+    .logo h1 {
+      color: var(--text-heading);
+      font-weight: 600;
+      font-size: 28px;
+    }
+
+    .form-group-reg {
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .form-group-reg label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .form-group-reg input {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid var(--input-border);
+      border-radius: 10px;
+      font-size: 16px;
+      transition: all 0.3s;
+      background: var(--input-bg);
+      color: var(--text-primary);
+    }
+
+    .form-group-reg input:focus {
+      outline: none;
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.2);
+    }
+
+    .form-group-reg i {
+      position: absolute;
+      right: 15px;
+      top: 42px;
+      color: var(--text-secondary);
+    }
+
+    .password-toggle {
+      cursor: pointer;
+    }
+
+    .btn-register {
+      width: 100%;
+      padding: 14px;
+      background: var(--accent-color);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 10px var(--button-shadow);
+    }
+
+    .btn-register:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px var(--button-shadow);
+    }
+
+    .btn-register:active {
+      transform: translateY(0);
+    }
+
+    .login-link {
+      text-align: center;
+      margin-top: 25px;
+      color: var(--text-secondary);
+    }
+
+    .login-link a {
+      color: var(--accent-color);
+      text-decoration: none;
+      font-weight: 500;
+      margin-left: 8px;
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+
+    .login-link a:hover {
+      text-decoration: underline;
+    }
+
+    .error-message {
+      color: #e74c3c;
+      font-size: 14px;
+      margin-top: 5px;
+      display: none;
+    }
+
+    body.dark-theme {
+      --bg-primary: #1a202c;
+      --bg-secondary: #2d3748;
+      --text-primary: #e2e8f0;
+      --text-secondary: #ffffff;
+      --text-heading: #f7fafc;
+      --accent-color: #63b3ed;
+      --nav-bg: rgba(26, 32, 44, 0.8);
+      --nav-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      --about-bg: rgba(26, 32, 44, 0.4);
+      --button-shadow: 0 4px 6px rgba(99, 179, 237, 0.3);
+      --button-hover-shadow: 0 6px 12px rgba(99, 179, 237, 0.4);
+      --modal-bg: rgba(26, 32, 44, 0.95);
+      --input-bg: #2d3748;
+      --input-border: #4a5568;
+      --bg-image:url('./public/dark.avif');
+      --bg-blur: 0px;
+      --bg-overlay: rgba(0, 0, 0, 0);
+    }
+
+    body.bright-theme {
+      --text-primary: #78350f;
+      --text-secondary: #92400e;
+      --text-heading: #5a3806;
+      --accent-color: #ea580c;
+      --user-bubble: #ea580c;
+      --bot-bubble: #fed7aa;
+      --user-text: #ffffff;
+      --bot-text: #78350f;
+      --input-bg: #fffbeb;
+      --input-border: #fed7aa;
+      --input-text: #78350f;
+      --sidebar-bg: #fffbeb;
+      --sidebar-border: #fed7aa;
+      --nav-bg: rgba(255, 251, 235, 0.9);
+      --shadow: 0 4px 6px rgba(234, 88, 12, 0.1);
+      --bg-image: url('./public/bright.jpg');
+    }
+
+    body.theme-2 {
+      --bg-primary: #667eea;
+      --bg-secondary: #f2f2f2;
+      --text-primary: #ffffff;
+      --text-secondary: #ffffff;
+      --text-heading: #faf5ff;
+      --accent-color: #46d5e4;
+      --user-bubble: #4dd4ef;
+      --bot-bubble: #3653e2;
+      --user-text: #ffffff;
+      --bot-text: #ffffff;
+      --input-bg: rgba(255, 255, 255, 0.15);
+      --input-border: rgba(255, 255, 255, 0.3);
+      --input-text: #ffffff;
+      --sidebar-bg: rgb(46, 43, 230);
+      --sidebar-border: rgba(255, 255, 255, 0.2);
+      --nav-bg: rgba(49, 80, 218, 0.9);
+      --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      --bg-image: url('./public/ocean.jpg');
+    }
+
+    body.theme-3 {
+      --bg-primary: #915cfc;
+      --bg-secondary: #6a82fb;
+      --text-primary: #d167ff;
+      --text-secondary: #e2e8f0;
+      --text-heading: #ffffff;
+      --accent-color: #452b65;
+      --user-bubble: #c388e1;
+      --bot-bubble: #5d2693;
+      --user-text: #1a202c;
+      --bot-text: #f7fafc;
+      --input-bg: rgba(255, 255, 255, 0.15);
+      --input-border: rgba(255, 255, 255, 0.3);
+      --input-text: #ffffff;
+      --sidebar-bg: rgb(160, 83, 242);
+      --sidebar-border: rgba(255, 255, 255, 0.2);
+      --nav-bg: rgba(177, 92, 252, 0.9);
+      --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      --bg-image: url('./public/future.jpg');
+    }
+
+    body.theme-4 {
+      --bg-primary: #11998e;
+      --bg-secondary: #38ef7d;
+      --text-primary: #f7fafc;
+      --text-secondary: #e6fffa;
+      --text-heading: #ffffff;
+      --accent-color: #6bf98a;
+      --nav-bg: rgba(17, 153, 142, 0.9);
+      --about-bg: rgba(56, 239, 125, 0.3);
+      --button-shadow: 0 4px 6px rgba(107, 249, 138, 0.3);
+      --button-hover-shadow: 0 6px 12px rgba(107, 249, 138, 0.4);
+      --modal-bg: rgba(17, 153, 142, 0.95);
+      --input-bg: rgba(255, 255, 255, 0.15);
+      --input-border: rgba(255, 255, 255, 0.3);
+      --bg-image: url('/Frontend/public/nature1.jpeg');
+     
+    }  </style>
+</head>
+<body class="default-theme">
+
+  <nav>
+    <div class="nav-links">
+      <div class="dropdown">
+        <button class="dropdown-btn">
+          <i class="fas fa-palette"></i> Theme
+        </button>
+        <div class="dropdown-content" id="theme-options">
+          <div class="theme-option" data-theme="default-theme">
+            <div class="theme-color" style="background-color: #3182ce"></div><span>Default</span>
+          </div>
+          <div class="theme-option" data-theme="dark-theme">
+            <div class="theme-color" style="background-color: #000000"></div><span>Dark</span>
+          </div>
+          <div class="theme-option" data-theme="bright-theme">
+            <div class="theme-color" style="background-color: #ea580c"></div><span>Bright</span>
+          </div>
+          <div class="theme-option" data-theme="theme-2">
+            <div class="theme-color" style="background-color: #1b31f5"></div><span>Ocean</span>
+          </div>
+          <div class="theme-option" data-theme="theme-3">
+            <div class="theme-color" style="background-color: #aa3bff"></div><span>Future</span>
+          </div>
+          <div class="theme-option" data-theme="theme-4">
+            <div class="theme-color" style="background-color: #6bff93"></div><span>Nature</span>
+          </div>
+        </div>
+      </div>
+      <a href="aboutus.html">About Us</a>
+    </div>
+  </nav>
+
+  <main class="main-content">
+    <h1 class="header-title">Promptly</h1>
+    <p class="description">Your smart assistant for conversations. Powered by AI to help you with answers, support, and engaging interactions.</p>
+    <button class="cta-button" id="get-started-btn">Get Started</button>
+  </main>
+
+  <div class="modal-overlay" id="login-modal">
+    <div class="modal">
+      <button class="modal-close" id="modal-close">
+        <i class="fas fa-times"></i>
+      </button>
+      <h2 class="modal-title">Login to Your Account</h2>
+      <form id="login-form">
+        <div class="form-group">
+          <label for="username">Email</label>
+          <input type="text" id="username" class="form-control" placeholder="Enter your email" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" class="form-control" placeholder="Enter your password" required>
+        </div>
+        <div class="form-group">
+          <label for="captcha">Enter CAPTCHA</label>
+          <div class="captcha-container">
+            <div class="captcha-code" id="captcha-text">A7B2</div>
+            <button type="button" class="captcha-refresh" id="refresh-captcha">
+              <i class="fas fa-sync-alt"></i>
+            </button>
+          </div>
+          <input type="text" id="captcha" class="form-control" placeholder="Enter the CAPTCHA code" required>
+        </div>
+        <button type="submit" class="login-button">Login</button>
+      </form>
+      <div class="register-section">
+        <span>New member?</span>
+        <button type="button" class="register-button" id="register-btn">Register</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="register-modal">
+    <div class="modal">
+      <button class="modal-close" id="register-close">
+        <i class="fas fa-times"></i>
+      </button>
+      
+      <div class="logo">
+        <i class="fas fa-user-plus"></i>
+        <h1>Create Account</h1>
+      </div>
+
+      <form id="registrationForm">
+        <div class="form-group">
+          <label for="fullName">Full Name</label>
+          <input type="text" id="fullName" class="form-control" placeholder="Enter your full name" required>
+        </div>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" class="form-control" placeholder="Enter your email" required>
+        </div>
+        <div class="form-group">
+          <label for="reg-password">Password</label>
+          <input type="password" id="reg-password" class="form-control" placeholder="Create a password" required>
+        </div>
+        <div class="form-group">
+          <label for="retypePassword">Retype Password</label>
+          <input type="password" id="retypePassword" class="form-control" placeholder="Retype your password" required>
+        </div>
+
+        <button type="submit" class="login-button">Register</button>
+      </form>
+
+      <div class="register-section">
+        <span>Already a member?</span>
+        <button type="button" class="register-button" id="login-btn">Login</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+const body = document.body;
+const dropdownBtn = document.querySelector('.dropdown-btn');
+const dropdownContent = document.querySelector('.dropdown-content');
+const themeOptions = document.querySelectorAll('.theme-option');
+const getStartedBtn = document.getElementById('get-started-btn');
+const loginModal = document.getElementById('login-modal');
+const registerModal = document.getElementById('register-modal');
+const modalClose = document.getElementById('modal-close');
+const registerClose = document.getElementById('register-close');
+const registerBtn = document.getElementById('register-btn');
+const loginBtn = document.getElementById('login-btn');
+const loginForm = document.getElementById('login-form');
+const registrationForm = document.getElementById('registrationForm');
+const captchaText = document.getElementById('captcha-text');
+const refreshCaptcha = document.getElementById('refresh-captcha');
+
+dropdownBtn.addEventListener('click', function(e) {
+  e.stopPropagation();
+  dropdownContent.classList.toggle('show');
+  dropdownBtn.classList.toggle('active');
+});
+document.addEventListener('click', function(e) {
+  if (dropdownContent.classList.contains('show') && !e.target.closest('.dropdown')) {
+    dropdownContent.classList.remove('show');
+    dropdownBtn.classList.remove('active');
+  }
+});
+themeOptions.forEach(option => {
+  option.addEventListener('click', () => {
+    const theme = option.getAttribute('data-theme');
+    body.className = theme;
+    localStorage.setItem('theme', theme);
+    dropdownContent.classList.remove('show');
+    dropdownBtn.classList.remove('active');
+  });
+});
+const savedTheme = localStorage.getItem('theme');
+if (savedTheme) body.className = savedTheme;
+
+function openLoginModal() { loginModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+function openRegisterModal() { registerModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+function closeModals() { loginModal.classList.remove('active'); registerModal.classList.remove('active'); document.body.style.overflow = 'auto'; }
+
+getStartedBtn.addEventListener('click', openLoginModal);
+modalClose.addEventListener('click', closeModals);
+registerClose.addEventListener('click', closeModals);
+registerBtn.addEventListener('click', function() { loginModal.classList.remove('active'); openRegisterModal(); });
+loginBtn.addEventListener('click', function() { registerModal.classList.remove('active'); openLoginModal(); });
+loginModal.addEventListener('click', function(e) { if (e.target === loginModal) closeModals(); });
+registerModal.addEventListener('click', function(e) { if (e.target === registerModal) closeModals(); });
+
+function generateCaptcha() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  return Array.from({length: 4}, () => chars.charAt(Math.floor(Math.random() * chars.length))).join('');
+}
+function updateCaptcha() { captchaText.textContent = generateCaptcha(); }
+refreshCaptcha.addEventListener('click', updateCaptcha);
+updateCaptcha();
+
+loginForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const captchaInput = document.getElementById('captcha').value;
+  if (captchaInput.toUpperCase() !== captchaText.textContent) {
+    alert('❌ CAPTCHA verification failed. Please try again.');
+    updateCaptcha();
+    return;
+  }
+
+  const username = document.getElementById("username").value;
+  const password = document.getElementById("password").value;
+
+  try {
+    const res = await fetch("http://localhost:5000/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }),
+    });
+
+    const data = await res.json();
+    console.log("🔍 Login response:", data);
+
+    if (res.ok && (data.success || data.message === "Login successful")) {
+      alert("✅ Login successful!");
+      localStorage.setItem("username", data.username || username);
+      console.log("➡️ Redirecting to chat.html...");
+      window.location.href = "chat.html"; 
+    } else {
+      alert("❌ " + (data.message || "Login failed"));
+    }
+  } catch (err) {
+    console.error("Login error:", err);
+    alert("Error connecting to backend: " + err.message);
+  }
+});
+
+registrationForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const password1 = document.getElementById('reg-password').value;
+  const retypePassword = document.getElementById('retypePassword').value;
+  if (password1 !== retypePassword) {
+    alert('❌ Passwords do not match!');
+    return;
+  }
+
+  const fullName = document.getElementById("fullName").value;
+  const username = document.getElementById("email").value; 
+
+  try {
+    const res = await fetch("http://localhost:5000/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ fullName, username, password }),
+    });
+    const data = await res.json();
+    alert(data.message);
+
+    if (res.ok && (data.success || data.message.includes("successful"))) {
+      closeModals();
+      openLoginModal();
+    }
+  } catch (err) {
+    console.error("Register error:", err);
+    alert("Error connecting to backend: " + err.message);
+  }
+});
+</script>
+</body>
+</html>
+
